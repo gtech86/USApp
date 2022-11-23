@@ -93,7 +93,7 @@ public class TeacherController {
     }
 
     @GetMapping("/student/{id}")
-    public ResponseEntity<List<TeacherResponse>> getTeacherByStudentId(@PathVariable long id){
+    public ResponseEntity<List<TeacherResponse>> getTeachersByStudentId(@PathVariable Long id){
         var student = studentService.getStudentById(id);
         if(student.isPresent()){
             List<TeacherResponse> teachers = teacherService.getTeacherByStudentId(id)
@@ -108,8 +108,21 @@ public class TeacherController {
                             )
                     )
                     .collect(Collectors.toList());
+            return ResponseEntity.ok(teachers);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping(path="/{teacherId}/student/{studentId}")
+    public ResponseEntity<String> assignStudentToTeacher(@PathVariable(required = true) Long teacherId, @PathVariable(required = true) Long studentId){
+        var teacher = teacherService.getTeacherById(teacherId);
+        var student = studentService.getStudentById(studentId);
+        if(student.isPresent() && teacher.isPresent()) {
+            studentService.assignTeacher(studentId,teacherId);
+            teacherService.assignStudent(teacherId, studentId);
+            return new ResponseEntity<>("StudentAddedToTeacher", HttpStatus.OK);
+        }
+        else return ResponseEntity.notFound().build();
     }
 
     @PatchMapping("/{id}")

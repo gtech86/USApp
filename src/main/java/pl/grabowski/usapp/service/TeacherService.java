@@ -11,6 +11,7 @@ import pl.grabowski.usapp.model.Student;
 import pl.grabowski.usapp.model.Teacher;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,6 +52,7 @@ public class TeacherService {
         var teacher = getTeacherById(teacherId);
         if(student.isPresent() && teacher.isPresent()){
             teacher.get().addStudent(student.get());
+
             teacherRepository.save(teacher.get());
             return teacher;
         }
@@ -68,7 +70,9 @@ public class TeacherService {
     }
 
     public List<Teacher> getTeacherByStudentId(Long studentId) {
-        return teacherRepository.getTeacherByStudentId(studentId);
+        var student = studentService.getStudentById(studentId);
+        if(student.isPresent()) return new ArrayList<>(student.get().getTeachers());
+        return new ArrayList<>();
     }
 
     @Transactional

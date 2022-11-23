@@ -93,6 +93,18 @@ public class StudentController {
         return new ResponseEntity<>(studentsResponse, HttpStatus.OK);
     }
 
+    @PostMapping(path="/{studentId}/teacher/{teacherId}")
+    public ResponseEntity<String> assignStudentToCourse(@PathVariable(required = true) Long studentId, @PathVariable(required = true) Long teacherId ){
+        var teacher = teacherService.getTeacherById(teacherId);
+        var student = studentService.getStudentById(studentId);
+        if(student.isPresent() && teacher.isPresent()) {
+            studentService.assignTeacher(studentId,teacherId);
+            teacherService.assignStudent(teacherId, studentId);
+            return new ResponseEntity<>("Teacher added to student", HttpStatus.OK);
+        }
+        else return ResponseEntity.notFound().build();
+    }
+
     @PatchMapping("/{id}")
     public ResponseEntity<Student> updateStudent(@PathVariable(required = true) Long id, @RequestBody StudentUpdateRequest studentUpdateData){
         if(studentService.getStudentById(id).isPresent()){
@@ -105,7 +117,7 @@ public class StudentController {
     }
 
     @GetMapping("/teachers/{id}")
-    public ResponseEntity<List<StudentResponse>> getStudentsByTeacherId(@PathVariable long id){
+    public ResponseEntity<List<StudentResponse>> getStudentsByTeacherId(@PathVariable Long id){
         var teacher = teacherService.getTeacherById(id);
         if(teacher.isPresent()){
             List<StudentResponse> students = studentService.getStudentsByTeacherId(id)
@@ -120,6 +132,7 @@ public class StudentController {
                             )
                     )
                     .collect(Collectors.toList());
+            return ResponseEntity.ok(students);
         }
         return ResponseEntity.notFound().build();
     }

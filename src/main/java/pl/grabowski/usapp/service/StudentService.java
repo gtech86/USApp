@@ -67,7 +67,11 @@ public class StudentService {
     }
 
     public List<Student> getStudentsByTeacherId(Long teacherId){
-        return studentRepository.getStudentsByTeacherId(teacherId);
+        var teacher = teacherService.getTeacherById(teacherId);
+        if(teacher.isPresent()){
+            return new ArrayList<>(teacher.get().getStudents());
+        }
+        return new ArrayList<>();
     }
 
 
