@@ -1,14 +1,10 @@
 package pl.grabowski.usapp.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import pl.grabowski.usapp.Repo.StudentRepository;
-import pl.grabowski.usapp.Repo.TeacherRepository;
-import pl.grabowski.usapp.dto.StudentResponse;
 import pl.grabowski.usapp.model.Student;
 
 import javax.transaction.Transactional;
@@ -24,6 +20,8 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final TeacherService teacherService;
     private static final int pageSize = 15;
+
+
 
     public StudentService(StudentRepository studentRepository, @Lazy TeacherService teacherService) {
         this.studentRepository = studentRepository;
@@ -66,6 +64,26 @@ public class StudentService {
         return student;
     }
 
+    @Transactional
+    public boolean removeTeacher(Long studentId, Long teacherId){
+        var teacher = teacherService.getTeacherById(teacherId);
+        var student = getStudentById(studentId);
+        if(student.isPresent() && teacher.isPresent()) {
+            studentRepository.removeTeacherFromStudent(studentId, teacherId);
+        }
+        if(studentContainsTeacher(student.get(), teacherId)){
+            return true;
+        }
+        return false;
+    }
+
+    boolean studentContainsTeacher(Student student, Long teacherId){
+        return student.getTeachers()
+                .stream()
+                .anyMatch(teacher -> teacher.getId().equals(teacherId));
+    }
+
+
     public List<Student> getStudentsByTeacherId(Long teacherId){
         var teacher = teacherService.getTeacherById(teacherId);
         if(teacher.isPresent()){
@@ -74,6 +92,9 @@ public class StudentService {
         return new ArrayList<>();
     }
 
+    public void deleteStudentById(Long id) {
+        studentRepository.deleteById(id);
+    }
 
     @Transactional
     public Optional<Student> updateStudent(Long id, Student student){

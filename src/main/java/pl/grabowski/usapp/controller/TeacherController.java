@@ -72,7 +72,7 @@ public class TeacherController {
     @GetMapping("/search")
     public ResponseEntity<List<TeacherResponse>> getAllTeacherByPersonalData(
             @RequestParam(required = true) int page,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(required = false)  String firstName,
             @RequestParam(required = false)  String lastName
     ){
@@ -125,7 +125,7 @@ public class TeacherController {
         else return ResponseEntity.notFound().build();
     }
 
-    @PatchMapping("/{id}")
+    @PostMapping("/{id}")
     public ResponseEntity<Teacher> updateTeacher(@PathVariable(required = true) Long id, @RequestBody TeacherUpdateRequest teacherUpdateData){
         if(teacherService.getTeacherById(id).isPresent()){
             var teacherToUpdate = teacherService.getTeacherById(id);

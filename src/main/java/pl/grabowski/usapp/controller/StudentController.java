@@ -40,7 +40,7 @@ public class StudentController {
         );
         try{
             studentService.addNewStudent(studentToAdd);
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(studentToAdd, HttpStatus.OK);
         }
 
         catch (IllegalArgumentException ex){
@@ -73,7 +73,7 @@ public class StudentController {
     @GetMapping("/search")
     public ResponseEntity<List<StudentResponse>> getAllStudentByPersonalData(
             @RequestParam(required = true) int page,
-            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "id") String sortBy,
             @RequestParam(required = false)  String firstName,
             @RequestParam(required = false)  String lastName
     ){
@@ -89,12 +89,13 @@ public class StudentController {
                         )
                 )
                 .collect(Collectors.toList());
+        if(studentsResponse.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 
         return new ResponseEntity<>(studentsResponse, HttpStatus.OK);
     }
 
     @PostMapping(path="/{studentId}/teacher/{teacherId}")
-    public ResponseEntity<String> assignStudentToCourse(@PathVariable(required = true) Long studentId, @PathVariable(required = true) Long teacherId ){
+    public ResponseEntity<String> assignTeacherToStudent(@PathVariable(required = true) Long studentId, @PathVariable(required = true) Long teacherId ){
         var teacher = teacherService.getTeacherById(teacherId);
         var student = studentService.getStudentById(studentId);
         if(student.isPresent() && teacher.isPresent()) {
@@ -105,7 +106,29 @@ public class StudentController {
         else return ResponseEntity.notFound().build();
     }
 
-    @PatchMapping("/{id}")
+    @DeleteMapping(path="/{id}")
+    public ResponseEntity<String> deleteStudentById(@PathVariable(required = true) Long id){
+        try{
+            studentService.deleteStudentById(id);
+            return new ResponseEntity<>("Student deleted", HttpStatus.OK);
+        }
+        catch(IllegalArgumentException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+    @DeleteMapping(path="/{studentId}/teacher/{teacherId}")
+    public ResponseEntity<String> removeTeacherFromStudent(@PathVariable(required = true) Long studentId, @PathVariable(required = true) Long teacherId ){
+        var teacher = teacherService.getTeacherById(teacherId);
+        var student = studentService.getStudentById(studentId);
+        if(student.isPresent() && teacher.isPresent()) {
+            var removeIsSuccess = studentService.removeTeacher(studentId, teacherId);
+            if(removeIsSuccess) return new ResponseEntity<>("Teacher removed from student list", HttpStatus.OK);
+            else return new ResponseEntity<>("Operation was failed!", HttpStatus.BAD_REQUEST);
+        }
+        else return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{id}")
     public ResponseEntity<Student> updateStudent(@PathVariable(required = true) Long id, @RequestBody StudentUpdateRequest studentUpdateData){
         if(studentService.getStudentById(id).isPresent()){
             var studentToUpdate = studentService.getStudentById(id);

@@ -4,10 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.experimental.PackagePrivate;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class Teacher {
 
     @ManyToMany(mappedBy = "teachers")
 
-    private List<Student> students;
+    private List<Student> students = new ArrayList<>();
 
     public Teacher(String firstName, String lastName, Integer age, String mail, String subject) {
         this.firstName = firstName;
@@ -38,5 +39,18 @@ public class Teacher {
 
     public void addStudent(Student student){
         this.students.add(student);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Teacher teacher = (Teacher) o;
+        return Objects.equals(id, teacher.id) && Objects.equals(firstName, teacher.firstName) && Objects.equals(lastName, teacher.lastName) && Objects.equals(age, teacher.age) && Objects.equals(mail, teacher.mail) && Objects.equals(subject, teacher.subject) && Objects.equals(students, teacher.students);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, age, mail, subject, students);
     }
 }

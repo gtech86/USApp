@@ -3,12 +3,6 @@ package pl.grabowski.usapp.dto;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.Date;
-
 @RequiredArgsConstructor
 @Getter
 public class StudentResponse {

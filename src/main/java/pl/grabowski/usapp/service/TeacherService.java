@@ -59,6 +59,25 @@ public class TeacherService {
         return Optional.empty();
     }
 
+    @Transactional
+    public boolean removeStudent(Long teacherId, Long studentId){
+        var student = studentService.getStudentById(studentId);
+        var teacher = getTeacherById(teacherId);
+        if(student.isPresent() && teacher.isPresent()) {
+            teacherRepository.removeStudentFromTeacher(teacherId, studentId);
+        }
+        if(teacherContainsStudent(teacher.get(), teacherId)){
+            return true;
+        }
+        return false;
+    }
+
+    private boolean teacherContainsStudent(Teacher teacher, Long studentId){
+        return teacher.getStudents()
+                .stream()
+                .anyMatch(student -> student.getId().equals(studentId));
+    }
+
     public List<Teacher> getAllTeachersByFirstOrLastName(int page, String sortBy, String firstName, String lastName) {
         return StreamSupport
                 .stream(teacherRepository.getTeachersByFirstNameOrLastName(
